@@ -72,7 +72,7 @@ function mountConnect(target, opts = {}) {
     }
   };
   document.addEventListener("click", onDocClick);
-  function el(tag, cls, text) {
+  function el2(tag, cls, text) {
     const n = document.createElement(tag);
     if (cls)
       n.className = cls;
@@ -162,15 +162,15 @@ function mountConnect(target, opts = {}) {
     if (state.kind === "booting")
       return;
     if (state.kind === "not-installed") {
-      const b = el("button", "btn get");
-      b.append(el("span", "glyph"), el("span", void 0, "Get Switchboard"), el("span", "arr", "\u2197"));
+      const b = el2("button", "btn get");
+      b.append(el2("span", "glyph"), el2("span", void 0, "Get Switchboard"), el2("span", "arr", "\u2197"));
       b.onclick = () => window.open(state.kind === "not-installed" ? state.installUrl : installUrl, "_blank", "noopener");
       mount.append(b);
       return;
     }
     if (state.kind === "disconnected") {
-      const b = el("button", "btn connect");
-      b.append(el("span", "glyph"), el("span", void 0, "Connect Switchboard"));
+      const b = el2("button", "btn connect");
+      b.append(el2("span", "glyph"), el2("span", void 0, "Connect Switchboard"));
       b.onclick = doConnect;
       mount.append(b);
       return;
@@ -179,20 +179,20 @@ function mountConnect(target, opts = {}) {
     const rawName = user?.name?.trim();
     const collides = !!rawName && !!project?.name && rawName.toLowerCase() === project.name.toLowerCase();
     const name = !rawName || collides ? "there" : rawName;
-    const wrap = el("div", "wrap");
-    const chip = el("button", "chip");
-    const av = el("div", "av");
+    const wrap = el2("div", "wrap");
+    const chip = el2("button", "chip");
+    const av = el2("div", "av");
     if (user?.avatar) {
-      const img = el("img");
+      const img = el2("img");
       img.src = user.avatar;
       img.alt = name;
       av.append(img);
     } else
       av.textContent = name.charAt(0).toUpperCase();
-    const who = el("div", "who");
-    who.append(el("div", "hi", `Hi ${name}`));
-    who.append(el("div", "proj", project ? project.name : "No context lent"));
-    chip.append(av, who, el("span", "caret", "\u25BE"));
+    const who = el2("div", "who");
+    who.append(el2("div", "hi", `Hi ${name}`));
+    who.append(el2("div", "proj", project ? project.name : "No context lent"));
+    chip.append(av, who, el2("span", "caret", "\u25BE"));
     chip.onclick = (e) => {
       e.stopPropagation();
       menuOpen = !menuOpen;
@@ -200,17 +200,17 @@ function mountConnect(target, opts = {}) {
     };
     wrap.append(chip);
     if (menuOpen) {
-      const menu = el("div", "menu");
-      menu.append(el("div", "lbl", "Working on"));
-      const row = el("button", "proj-row");
-      row.append(el("span", void 0, project ? project.name : "Choose a context"));
-      row.append(el("span", "go", project ? "Switch \u25B8" : "Choose \u25B8"));
+      const menu = el2("div", "menu");
+      menu.append(el2("div", "lbl", "Working on"));
+      const row = el2("button", "proj-row");
+      row.append(el2("span", void 0, project ? project.name : "Choose a context"));
+      row.append(el2("span", "go", project ? "Switch \u25B8" : "Choose \u25B8"));
       row.onclick = doPick;
-      menu.append(row, el("div", "sep"));
-      const dc = el("button", "item", "Disconnect this app");
+      menu.append(row, el2("div", "sep"));
+      const dc = el2("button", "item", "Disconnect this app");
       dc.onclick = doDisconnect;
       menu.append(dc);
-      menu.append(el("div", "foot", "Connectors, budgets & activity live in the Switchboard toolbar panel."));
+      menu.append(el2("div", "foot", "Connectors, budgets & activity live in the Switchboard toolbar panel."));
       wrap.append(menu);
     }
     mount.append(wrap);
@@ -377,62 +377,28 @@ function whenRelayReady(timeoutMs = 3e3, opts) {
 
 // src/aplus.js
 var $ = (id) => document.getElementById(id);
-var STORE_KEY = "aplus:v1";
+var STORE_KEY = "aplus:v2";
 var INSTALL_URL = "https://thelastprompt.ai/switchboard/";
+var SAMPLE_LINE = "Copper tongue cleaner, 2-pack \u2014 pure copper, flexible handle, replaces the plastic junk";
+var CUSTOM = "__custom__";
 var relay = null;
 var notInstalled = false;
+var brand = null;
+var productChoice = "";
+var autoTone = "";
+var directions = null;
+var chosenIdx = -1;
 var stack = null;
 var busy = false;
 var runSeq = 0;
 var lastTask = null;
-var TONES = ["Premium minimal", "Ayurvedic heritage", "Clinical + evidence", "Playful DTC"];
-var TONE_VOICE = {
-  "Premium minimal": "restrained and confident \u2014 short sentences, zero hype words, no exclamation points, let the material speak",
-  "Ayurvedic heritage": "warm and rooted \u2014 daily-ritual language, sensory detail, tradition treated with respect (never mystical woo)",
-  "Clinical + evidence": "precise and mechanism-first \u2014 every claim earns its keep, name the how (copper ions, thermal mass, decibels), no fluff",
-  "Playful DTC": "witty and conversational \u2014 first-person brand voice, one good joke per module max, still selling hard"
-};
-var SAMPLES = [
-  {
-    cat: "beauty",
-    name: "Copper Tongue Cleaner \u2014 2 pack",
-    tone: "Ayurvedic heritage",
-    bullets: [
-      "pure copper, naturally antimicrobial \u2014 the ayurveda thing that actually works",
-      "flexible handle so you don't gag, comfy for everyone in the house (that's why the 2 pack)",
-      "replaces the plastic scraper junk \u2014 lasts forever, ships in a little cotton pouch"
-    ].join("\n")
-  },
-  {
-    cat: "kitchen",
-    name: "Cast Iron Tortilla Press \u2014 8 inch",
-    tone: "Premium minimal",
-    bullets: [
-      "restaurant-heavy cast iron \u2014 one squeeze, a perfect 8-inch tortilla, no rolling pin drama",
-      "comes pre-seasoned, wipes clean, lives on the counter looking great",
-      "not just tortillas \u2014 dumplings, empanadas, roti. we throw in 100 parchment rounds"
-    ].join("\n")
-  },
-  {
-    cat: "gadget",
-    name: "Pocket White Noise Machine \u2014 USB-C",
-    tone: "Clinical + evidence",
-    bullets: [
-      "real fan inside, not a looped mp3 \u2014 actual non-repeating white noise",
-      "hockey-puck small, lives in a carry-on side pocket, finally charges over USB-C",
-      "remembers your last volume, 12 sounds, headphone jack for red-eyes"
-    ].join("\n")
-  }
-];
-var sampleIdx = 0;
-var tone = SAMPLES[0].tone;
-var GRADS = {
-  "Premium minimal": "linear-gradient(118deg, #22262C, #3E444D 48%, #7E8791)",
-  "Ayurvedic heritage": "linear-gradient(118deg, #6E3317, #A85C2E 48%, #DDA36C)",
-  "Clinical + evidence": "linear-gradient(118deg, #0E3A5C, #2C6E9E 48%, #8FC1E3)",
-  "Playful DTC": "linear-gradient(118deg, #B03A52, #E56E5B 48%, #F7B08C)"
-};
 var str = (v, fb = "") => typeof v === "string" && v.trim() ? v.trim() : fb;
+var el = (tag, cls, text) => {
+  const n = document.createElement(tag);
+  if (cls) n.className = cls;
+  if (text != null) n.textContent = text;
+  return n;
+};
 var cellVal = (v) => {
   if (v === true || v === "true") return true;
   if (v === false || v === "false" || v == null) return false;
@@ -440,17 +406,14 @@ var cellVal = (v) => {
   return t ? t : false;
 };
 function event(t) {
-  const d = document.createElement("div");
-  d.className = "event";
-  d.textContent = t;
-  $("events").append(d);
+  $("events").append(el("div", "event", t));
 }
 function toast(t) {
-  const el = $("toast");
-  el.textContent = t;
-  el.classList.add("show");
+  const box = $("toast");
+  box.textContent = t;
+  box.classList.add("show");
   clearTimeout(toast._t);
-  toast._t = setTimeout(() => el.classList.remove("show"), 1500);
+  toast._t = setTimeout(() => box.classList.remove("show"), 1500);
 }
 async function copyText(t) {
   try {
@@ -470,7 +433,16 @@ async function copyText(t) {
   }
 }
 function save() {
-  const data = { name: $("f-name").value, bullets: $("f-bullets").value, url: $("f-url").value, tone, sampleIdx, stack };
+  const data = {
+    line: $("f-line").value,
+    custom: $("f-custom").value,
+    tone: $("f-tone").value,
+    autoTone,
+    productChoice,
+    directions,
+    chosenIdx,
+    stack
+  };
   try {
     localStorage.setItem(STORE_KEY, JSON.stringify(data));
   } catch {
@@ -483,89 +455,190 @@ function restore() {
   } catch {
   }
   if (d) {
-    if (typeof d.name === "string") $("f-name").value = d.name;
-    if (typeof d.bullets === "string") $("f-bullets").value = d.bullets;
-    if (typeof d.url === "string") $("f-url").value = d.url;
-    if (TONES.includes(d.tone)) tone = d.tone;
-    if (Number.isInteger(d.sampleIdx) && SAMPLES[d.sampleIdx]) sampleIdx = d.sampleIdx;
+    if (typeof d.line === "string") $("f-line").value = d.line;
+    if (typeof d.custom === "string") $("f-custom").value = d.custom;
+    if (typeof d.tone === "string") $("f-tone").value = d.tone;
+    if (typeof d.autoTone === "string") autoTone = d.autoTone;
+    if (typeof d.productChoice === "string") productChoice = d.productChoice;
+    if (Array.isArray(d.directions)) {
+      try {
+        directions = normalizeDirections({ directions: d.directions });
+      } catch {
+        directions = null;
+      }
+    }
+    if (directions && Number.isInteger(d.chosenIdx) && d.chosenIdx >= -1 && d.chosenIdx < directions.length) chosenIdx = d.chosenIdx;
     if (d.stack && typeof d.stack === "object") {
       try {
         stack = normalizeStack(d.stack);
-        renderStack();
-        $("preview").hidden = false;
       } catch {
         stack = null;
       }
     }
   }
-  renderTones();
-  sampleNote();
+  if (!$("f-line").value.trim()) $("f-line").value = SAMPLE_LINE;
+  if (directions) {
+    renderDirections();
+    $("directions").hidden = false;
+  }
+  if (stack) {
+    renderStack();
+    $("preview").hidden = false;
+  }
 }
-function renderTones() {
-  const mount = $("tones");
-  mount.textContent = "";
-  const rec = SAMPLES[sampleIdx].tone;
-  TONES.forEach((t) => {
-    const b = document.createElement("button");
-    b.type = "button";
-    b.className = "tone" + (t === tone ? " on" : "");
-    if (t === rec) {
-      const s = document.createElement("span");
-      s.className = "star";
-      s.textContent = "\u2605";
-      b.append(s);
-      b.title = "recommended for this sample";
-    }
-    b.append(document.createTextNode(t));
-    b.addEventListener("click", () => {
-      tone = t;
-      renderTones();
-      save();
-    });
-    mount.append(b);
-  });
+function normalizeBrand(ctx) {
+  const d = ctx && ctx.data || {};
+  const arr = (v) => Array.isArray(v) ? v.filter(Boolean).map(String) : [];
+  const products = arr(d.products).length ? arr(d.products) : arr(d.range);
+  return {
+    name: str(ctx.name) || str(d.name) || "Brand",
+    voice: str(d.voice) || str(d.vibe) || str(d.positioning),
+    positioning: str(d.positioning),
+    audience: str(d.audience),
+    palette: arr(d.palette).map((c) => c.trim()).filter((c) => /^(#[0-9a-f]{3,8}|rgb|hsl|[a-z]+)/i.test(c)),
+    products
+  };
 }
-function sampleNote() {
-  $("sample-note").textContent = "sample " + (sampleIdx + 1) + "/" + SAMPLES.length + " \xB7 " + SAMPLES[sampleIdx].cat;
-}
-function loadSample(i) {
-  sampleIdx = (i % SAMPLES.length + SAMPLES.length) % SAMPLES.length;
-  const smp = SAMPLES[sampleIdx];
-  $("f-name").value = smp.name;
-  $("f-bullets").value = smp.bullets;
-  $("f-url").value = "";
-  tone = smp.tone;
-  renderTones();
-  sampleNote();
+function applyBrand(ctx) {
+  brand = normalizeBrand(ctx);
+  if (!brand.products.includes(productChoice) && productChoice !== CUSTOM) {
+    productChoice = brand.products.length ? brand.products[0] : CUSTOM;
+  }
+  const t = $("f-tone");
+  if (!t.value.trim() || t.value.trim() === autoTone) t.value = brand.voice;
+  autoTone = brand.voice;
+  if (stack) renderStack();
+  reflectEntry();
   save();
+}
+async function loadBrandContext() {
+  if (!relay) return;
+  try {
+    const ctx = await relay.context.active();
+    if (ctx) applyBrand(ctx);
+    else reflectEntry();
+  } catch {
+    reflectEntry();
+  }
+}
+async function pickBrand() {
+  if (!relay || busy) return;
+  try {
+    const ctx = await relay.context.pick();
+    if (ctx) applyBrand(ctx);
+  } catch {
+  }
+}
+$("use-brand").addEventListener("click", pickBrand);
+$("brand-switch").addEventListener("click", pickBrand);
+async function onRelay() {
+  if ($("f-line").value.trim() === SAMPLE_LINE) $("f-line").value = "";
+  reflectEntry();
+  await loadBrandContext();
 }
 mountConnect($("chip-dock"), {
   scope: { reason: "write your Amazon A+ content", tools: ["WebFetch"], models: ["sonnet"] },
   installUrl: INSTALL_URL,
   onConnect: (r) => {
     relay = r;
-    reflect();
+    onRelay();
   },
   onDisconnect: () => {
     relay = null;
-    reflect();
+    brand = null;
+    reflectEntry();
+  },
+  // The chip's "Switch" (and the side panel) can change the lent brand — follow it live.
+  onProjectChange: (ctx) => {
+    if (ctx) {
+      applyBrand(ctx);
+      return;
+    }
+    brand = null;
+    loadBrandContext();
   }
 });
 (async () => {
   const r = await whenRelayReady(2e3, { installUrl: INSTALL_URL });
   if (r && "connect" in r) {
     const grant = await r.permissions().catch(() => null);
-    if (grant) relay = r;
+    if (grant) {
+      relay = r;
+      await onRelay();
+    }
   } else if (r && r.installed === false) {
     notInstalled = true;
   }
-  reflect();
+  reflectEntry();
 })();
-var REGEN_IDS = ["rg-hero", "rg-features", "rg-comparison", "rg-brandstory", "rg-faqs", "rg-terms", "regen-all"];
+function reflectEntry() {
+  const withBrand = !!(relay && brand);
+  $("entry-brand").hidden = !withBrand;
+  $("entry-line").hidden = withBrand;
+  $("brandbar").hidden = !withBrand;
+  if (withBrand) {
+    $("brand-name").textContent = "A+ for " + brand.name;
+    const sw = $("brand-swatches");
+    sw.textContent = "";
+    for (const c of brand.palette.slice(0, 5)) {
+      const s = el("span", "sw");
+      s.style.background = c;
+      sw.append(s);
+    }
+    renderProductChips();
+    $("f-custom").hidden = productChoice !== CUSTOM;
+    $("tone-note").hidden = false;
+    $("tone-note").textContent = "from " + brand.name + "\u2019s voice \u2014 edit freely";
+  } else {
+    $("use-brand-row").hidden = !relay;
+    $("tone-note").hidden = true;
+  }
+  $("sample-chip").hidden = !(!relay && $("f-line").value.trim() === SAMPLE_LINE);
+  reflect();
+}
+function chipBtn(label, on, fn) {
+  const b = el("button", "pchip" + (on ? " on" : ""), label);
+  b.type = "button";
+  b.addEventListener("click", fn);
+  return b;
+}
+function renderProductChips() {
+  const m = $("product-chips");
+  m.textContent = "";
+  brand.products.slice(0, 8).forEach((p) => {
+    m.append(chipBtn(p, productChoice === p, () => {
+      productChoice = p;
+      reflectEntry();
+      save();
+    }));
+  });
+  m.append(chipBtn("something else\u2026", productChoice === CUSTOM, () => {
+    productChoice = CUSTOM;
+    reflectEntry();
+    save();
+    $("f-custom").focus();
+  }));
+}
+function currentProduct() {
+  if (relay && brand) {
+    if (productChoice === CUSTOM) return str($("f-custom").value);
+    return str(productChoice);
+  }
+  return str($("f-line").value);
+}
+function lineUrl() {
+  if (relay && brand && productChoice !== CUSTOM) return "";
+  const line = currentProduct();
+  const m = line.match(/https?:\/\/\S+/i);
+  if (m) return m[0];
+  if (/^[\w-]+(\.[\w-]+)+(\/\S*)?$/.test(line)) return "https://" + line;
+  return "";
+}
 function reflect() {
   const on = !!relay;
-  $("go").disabled = !on || busy;
-  REGEN_IDS.forEach((id) => {
+  $("go").disabled = !on || busy || !currentProduct();
+  $("rg-directions").disabled = !on || busy || !currentProduct();
+  ["rg-hero", "rg-features", "rg-comparison", "rg-brandstory", "rg-faqs", "rg-terms", "regen-all"].forEach((id) => {
     $(id).disabled = !on || busy || !stack;
   });
   $("copy-all").disabled = !stack;
@@ -573,7 +646,7 @@ function reflect() {
   const hint = $("conn-hint");
   hint.textContent = "";
   if (on) {
-    hint.textContent = "connected \u2014 writes on your Claude, the app never sees a key";
+    hint.textContent = brand ? "writing as " + brand.name + " \u2014 on your Claude, the app never sees a key" : "connected \u2014 writes on your Claude, the app never sees a key";
   } else if (notInstalled) {
     hint.append("needs the Switchboard sidekick \u2014 ");
     const a = document.createElement("a");
@@ -583,8 +656,77 @@ function reflect() {
     a.textContent = "get it here";
     hint.append(a);
   } else {
-    hint.textContent = "everything below works now \u2014 connect Switchboard (top right) to write the stack";
+    hint.textContent = "everything here is explorable \u2014 connect Switchboard (top right) to write the stack";
   }
+}
+function brandBrief() {
+  if (!brand) return "";
+  return [
+    "BRAND (lent to this app via Switchboard \u2014 write as this brand):",
+    "name: " + brand.name,
+    brand.voice ? "voice: " + brand.voice : "",
+    brand.positioning ? "positioning: " + brand.positioning : "",
+    brand.audience ? "audience: " + brand.audience : ""
+  ].filter(Boolean).join("\n");
+}
+function productBrief() {
+  const tone = str($("f-tone").value);
+  return [
+    "PRODUCT: " + (currentProduct() || "an unnamed product"),
+    brandBrief(),
+    tone ? "TONE: " + tone : ""
+  ].filter(Boolean).join("\n\n");
+}
+function fetchStep() {
+  const url = lineUrl();
+  if (!url) return "";
+  return "FIRST: use the WebFetch tool to read " + url + " and pull real details \u2014 materials, dimensions, claims, review language, brand voice. Fold what you learn into the copy; never invent specs the page does not support. Then write the JSON.";
+}
+function directionBrief() {
+  const d = directions && directions[chosenIdx];
+  if (!d) return "";
+  return [
+    "CHOSEN DIRECTION \u2014 the user picked this; the whole stack must commit to it:",
+    "name: " + d.name,
+    d.angle ? "angle: " + d.angle : "",
+    d.heroHeadline ? 'hero: build on "' + d.heroHeadline + '" (refine the wording, keep the idea)' : "",
+    d.chartArgues ? "the comparison chart must argue: " + d.chartArgues : ""
+  ].filter(Boolean).join("\n");
+}
+var DIR_SHAPE = [
+  "{",
+  '"directions": exactly 3 of {',
+  '  "name": 2-4 word name for the creative direction,',
+  '  "heroHeadline": the hero banner line this direction would run, <= 9 words, sentence case,',
+  '  "angle": one sentence \u2014 the buyer psychology this direction sells with,',
+  '  "chartArgues": one sentence \u2014 what the comparison chart argues under this direction,',
+  '  "recommended": true | false \u2014 exactly ONE true: the one most likely to convert',
+  "}}"
+].join("\n");
+function buildDirectionsPrompt() {
+  return [
+    "You are a senior Amazon listing copywriter planning an A+ (Enhanced Brand Content) module stack.",
+    fetchStep(),
+    productBrief(),
+    "Propose exactly 3 genuinely DISTINCT creative directions for the full stack \u2014 different buyer psychology each (e.g. ritual/sensory vs mechanism/evidence vs anti-generic value), not three wordings of one idea." + (brand ? " Every direction must still sound unmistakably like the brand." : ""),
+    "Respond with ONLY one JSON object \u2014 no prose, no markdown fences \u2014 shaped exactly:\n" + DIR_SHAPE
+  ].filter(Boolean).join("\n\n");
+}
+function normalizeDirections(d) {
+  if (!d || !Array.isArray(d.directions) || d.directions.length < 2) throw new Error("INCOMPLETE");
+  const list = d.directions.slice(0, 4).map((x) => ({
+    name: str(x?.name, "Direction"),
+    heroHeadline: str(x?.heroHeadline),
+    angle: str(x?.angle),
+    chartArgues: str(x?.chartArgues) || str(x?.comparisonArgues),
+    recommended: x?.recommended === true || x?.recommended === "true"
+  }));
+  let rec = list.findIndex((x) => x.recommended);
+  if (rec < 0) rec = 0;
+  list.forEach((x, i) => {
+    x.recommended = i === rec;
+  });
+  return list;
 }
 var SHAPE = [
   "{",
@@ -597,26 +739,12 @@ var SHAPE = [
   '"searchTerms": 8 to 12 lowercase buyer search phrases, 2-4 words each, no punctuation, no duplicates, no brand names',
   "}"
 ].join("\n");
-function productBrief() {
-  const name = str($("f-name").value, "an unnamed product");
-  const bullets = str($("f-bullets").value, "(no bullets given \u2014 infer sensible, honest claims from the product name)");
-  return [
-    "PRODUCT: " + name,
-    "FOUNDER'S ROUGH BULLETS (raw notes \u2014 rewrite them properly, keep every real claim, invent nothing):\n" + bullets,
-    "TONE: " + tone + " \u2014 " + (TONE_VOICE[tone] || "")
-  ].join("\n\n");
-}
-function fetchStep() {
-  let url = str($("f-url").value);
-  if (!url) return "";
-  if (!/^https?:\/\//i.test(url)) url = "https://" + url;
-  return "FIRST: use the WebFetch tool to read " + url + " and pull real details \u2014 materials, dimensions, claims, review language, brand voice. Fold what you learn into the copy; never invent specs the page does not support. Then write the JSON.";
-}
 function buildStackPrompt() {
   return [
     "You are a senior Amazon listing copywriter writing a complete A+ (Enhanced Brand Content) module stack.",
     fetchStep(),
     productBrief(),
+    directionBrief(),
     'Write tight, concrete, conversion-focused retail copy. Ban the words "elevate", "game-changer", "unleash" and empty superlatives. In comparison cells use true for a clear win (renders as a green check), false for a miss (gray dash), or a short string when a value reads better (e.g. "Pure copper" vs "Plastic").',
     "Respond with ONLY one JSON object \u2014 no prose, no markdown fences \u2014 shaped exactly:\n" + SHAPE
   ].filter(Boolean).join("\n\n");
@@ -627,9 +755,10 @@ function buildModulePrompt(key) {
     "You are a senior Amazon listing copywriter. You already wrote this A+ stack (JSON):",
     JSON.stringify(stack),
     productBrief(),
+    directionBrief(),
     "Rewrite ONLY the " + m.label + ": take a genuinely different angle than the current version \u2014 same product, same tone, same honesty.",
     "Respond with ONLY one JSON object \u2014 no prose, no markdown fences \u2014 shaped exactly:\n" + m.shape
-  ].join("\n\n");
+  ].filter(Boolean).join("\n\n");
 }
 var normFeat = (f) => ({ emoji: str(f?.emoji, "\u2726"), title: str(f?.title, "Feature"), body: str(f?.body) });
 var normRow = (r) => ({ feature: str(r?.feature, "\u2014"), ours: cellVal(r?.ours), other: cellVal(r?.other) });
@@ -643,7 +772,7 @@ function normalizeStack(d) {
     heroSub: str(d.heroSub),
     features: d.features.slice(0, 4).map(normFeat),
     comparison: {
-      ourName: str(d.comparison.ourName, str($("f-name").value, "This one")),
+      ourName: str(d.comparison.ourName, "This one"),
       otherName: str(d.comparison.otherName, "The usual option"),
       rows: d.comparison.rows.slice(0, 6).map(normRow)
     },
@@ -727,6 +856,7 @@ var MODULES = {
     }
   }
 };
+var DIR_LINES = ["Reading the brief\u2026", "Sketching three directions\u2026", "Arguing three different ways\u2026"];
 var GEN_LINES = [
   "Reading the brief\u2026",
   "Writing the hero\u2026",
@@ -774,7 +904,7 @@ async function streamJSON(prompt, my) {
       if (d.result?.ok) {
         if (d.call?.name === "WebFetch") event("\u2713 page read \u2014 folding it into the copy");
       } else {
-        event("\u26A0 " + (d.call?.name || "tool") + " failed: " + (d.result?.error?.message || "unknown") + " \u2014 continuing from your bullets");
+        event("\u26A0 " + (d.call?.name || "tool") + " failed: " + (d.result?.error?.message || "unknown") + " \u2014 continuing from your line");
       }
     } else if (d.type === "error") {
       throw Object.assign(new Error(d.error?.message || "stream error"), { code: d.error?.code });
@@ -789,8 +919,39 @@ async function streamJSON(prompt, my) {
     throw new Error("PARSE");
   }
 }
+async function generateDirections() {
+  if (!relay || busy || !currentProduct()) return;
+  lastTask = generateDirections;
+  const my = ++runSeq;
+  setBusy(true, DIR_LINES);
+  try {
+    const data = await streamJSON(buildDirectionsPrompt(), my);
+    if (!data || my !== runSeq) return;
+    directions = normalizeDirections(data);
+    chosenIdx = -1;
+    save();
+    renderDirections();
+    $("directions").hidden = false;
+    $("directions").scrollIntoView({ behavior: "smooth", block: "start" });
+  } catch (err) {
+    if (my === runSeq) showError(err);
+  } finally {
+    if (my === runSeq) setBusy(false);
+  }
+}
+async function pickDirection(i) {
+  if (busy || !directions || !directions[i]) return;
+  if (!relay) {
+    toast("connect Switchboard (top right) to write the stack");
+    return;
+  }
+  chosenIdx = i;
+  renderDirections();
+  save();
+  await generateStack();
+}
 async function generateStack() {
-  if (!relay || busy) return;
+  if (!relay || busy || !currentProduct()) return;
   lastTask = generateStack;
   const my = ++runSeq;
   setBusy(true, GEN_LINES);
@@ -850,7 +1011,7 @@ function showError(err) {
     head = "That reply wasn't clean JSON.";
     body = "It happens \u2014 models drift. Hit Try again; the second pass almost always lands.";
   } else if (msg === "INCOMPLETE") {
-    head = "The stack came back missing pieces.";
+    head = "The reply came back missing pieces.";
     body = "Hit Try again for a full pass.";
   } else {
     head = "Generation failed.";
@@ -861,6 +1022,33 @@ function showError(err) {
   const b = document.createElement("b");
   b.textContent = head;
   p.append(b, " " + body);
+}
+function renderDirections() {
+  const g = $("dir-grid");
+  g.textContent = "";
+  if (!directions) return;
+  const hot = chosenIdx >= 0 ? chosenIdx : directions.findIndex((d) => d.recommended);
+  directions.forEach((d, i) => {
+    const card = el("button", "dir" + (i === hot ? " hot" : ""));
+    card.type = "button";
+    const top = el("div", "dir-top");
+    top.append(el("span", "dir-name", d.name));
+    if (d.recommended) top.append(el("span", "dtag", "recommended"));
+    if (i === chosenIdx) top.append(el("span", "dtag sel", "picked"));
+    card.append(top);
+    if (d.heroHeadline) card.append(el("div", "dir-hero", "\u201C" + d.heroHeadline + "\u201D"));
+    if (d.angle) card.append(el("p", "dir-angle", d.angle));
+    if (d.chartArgues) card.append(el("p", "dir-chart", "chart argues \u2014 " + d.chartArgues));
+    card.addEventListener("click", () => pickDirection(i));
+    g.append(card);
+  });
+}
+function heroGradient() {
+  const p = (brand?.palette || []).slice(0, 3);
+  if (p.length >= 3) return `linear-gradient(118deg, ${p[0]}, ${p[1]} 48%, ${p[2]})`;
+  if (p.length === 2) return `linear-gradient(118deg, ${p[0]}, ${p[1]})`;
+  if (p.length === 1) return `linear-gradient(118deg, ${p[0]}, color-mix(in srgb, ${p[0]} 55%, #FFFFFF))`;
+  return "linear-gradient(118deg, #22262C, #3E444D 48%, #7E8791)";
 }
 function cellNode(v) {
   const sp = document.createElement("span");
@@ -909,24 +1097,16 @@ function renderComparison() {
 }
 function renderStack() {
   if (!stack) return;
-  $("hero-banner").style.background = GRADS[tone] || GRADS["Ayurvedic heritage"];
+  $("hero-banner").style.background = heroGradient();
   $("hero-headline").textContent = stack.heroHeadline;
   $("hero-sub").textContent = stack.heroSub;
   $("hero-sub").hidden = !stack.heroSub;
   const fg = $("feat-grid");
   fg.textContent = "";
   stack.features.forEach((f) => {
-    const el = document.createElement("div");
-    el.className = "feat";
-    const ic = document.createElement("div");
-    ic.className = "ic";
-    ic.textContent = f.emoji;
-    const h = document.createElement("h4");
-    h.textContent = f.title;
-    const p = document.createElement("p");
-    p.textContent = f.body;
-    el.append(ic, h, p);
-    fg.append(el);
+    const box = el("div", "feat");
+    box.append(el("div", "ic", f.emoji), el("h4", null, f.title), el("p", null, f.body));
+    fg.append(box);
   });
   renderComparison();
   $("bs-headline").textContent = stack.brandStory.headline;
@@ -934,29 +1114,17 @@ function renderStack() {
   const fl = $("faq-list");
   fl.textContent = "";
   stack.faqs.forEach((f) => {
-    const row = document.createElement("div");
-    row.className = "faq-row";
-    const q = document.createElement("div");
-    q.className = "faq-q";
-    const qm = document.createElement("span");
-    qm.className = "qm";
-    qm.textContent = "Q";
-    const qt = document.createElement("span");
-    qt.textContent = f.q;
-    q.append(qm, qt);
-    const a = document.createElement("p");
-    a.className = "faq-a";
-    a.textContent = f.a;
-    row.append(q, a);
+    const row = el("div", "faq-row");
+    const q = el("div", "faq-q");
+    q.append(el("span", "qm", "Q"), el("span", null, f.q));
+    row.append(q, el("p", "faq-a", f.a));
     fl.append(row);
   });
   const tw = $("terms");
   tw.textContent = "";
   stack.searchTerms.forEach((t) => {
-    const b = document.createElement("button");
+    const b = el("button", "term", t);
     b.type = "button";
-    b.className = "term";
-    b.textContent = t;
     b.addEventListener("click", async () => {
       await copyText(t);
       b.classList.add("copied");
@@ -969,9 +1137,14 @@ function renderStack() {
 function stackText() {
   if (!stack) return "";
   const cellTxt = (v) => v === true ? "\u2713" : v === false ? "\u2014" : String(v);
+  const dir = directions && directions[chosenIdx];
+  const tone = str($("f-tone").value);
   const L = [];
-  L.push("A+ CONTENT \u2014 " + str($("f-name").value, "product"));
-  L.push("tone: " + tone, "");
+  L.push("A+ CONTENT \u2014 " + (currentProduct() || "product"));
+  if (brand) L.push("brand: " + brand.name);
+  if (dir) L.push("direction: " + dir.name);
+  if (tone) L.push("tone: " + tone);
+  L.push("");
   L.push("== HERO (standard image header with text) ==", stack.heroHeadline);
   if (stack.heroSub) L.push(stack.heroSub);
   L.push("", "== FOUR-FEATURE GRID (standard four image & text) ==");
@@ -990,9 +1163,9 @@ function stackText() {
   L.push("== BACKEND SEARCH TERMS (paste into Seller Central) ==", stack.searchTerms.join(" "));
   return L.join("\n");
 }
-$("go").addEventListener("click", generateStack);
+$("go").addEventListener("click", generateDirections);
+$("rg-directions").addEventListener("click", generateDirections);
 $("regen-all").addEventListener("click", generateStack);
-$("sample-btn").addEventListener("click", () => loadSample(sampleIdx + 1));
 $("cancel").addEventListener("click", () => {
   runSeq++;
   setBusy(false);
@@ -1014,7 +1187,11 @@ $("copy-terms").addEventListener("click", async () => {
 for (const [key, m] of Object.entries(MODULES)) {
   $(m.btn).addEventListener("click", () => regenModule(key));
 }
-["f-name", "f-bullets", "f-url"].forEach((id) => $(id).addEventListener("input", save));
+["f-line", "f-custom", "f-tone"].forEach((id) => $(id).addEventListener("input", () => {
+  save();
+  $("sample-chip").hidden = !(!relay && $("f-line").value.trim() === SAMPLE_LINE);
+  reflect();
+}));
 restore();
-reflect();
+reflectEntry();
 //# sourceMappingURL=aplus.js.map
